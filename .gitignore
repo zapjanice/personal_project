@@ -6,3 +6,4 @@ raw_data/
 **/__pycache__/
 .env
 brain_tumor_data/
+flower_data/
