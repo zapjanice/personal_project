@@ -6,6 +6,7 @@ import time
 import urllib.request
 import pandas as pd
 from bs4 import BeautifulSoup
+from string import digits
 
 base = "https://www.starbucks.co.jp"
 url = base + "/cafe/jimoto_frappuccino/"
@@ -16,6 +17,9 @@ soup = BeautifulSoup(response.content, "html.parser")
 items = []
 for item in soup.find("ul", class_="_list").find_all("li"):
     prefecture = item.find("a").select('img')[0]['alt']
+    prefecture = prefecture.replace('#', '') 
+    remove_digits = str.maketrans('', '', digits)
+    prefecture = prefecture.translate(remove_digits)
     end_link = item.find("a").get('href')
     link = base+end_link
     response_2 = requests.get(link)
@@ -25,6 +29,7 @@ for item in soup.find("ul", class_="_list").find_all("li"):
     img_link = base + (img_link["src"].split("src=")[-1])   
     items.append({'prefecture': prefecture, 'flavor': flavor, 'link': link, 'img_link':img_link})
     
+    '''Code to download pictures'''
     timestamp = time.asctime() 
     txt = open(f'{prefecture}.png', "wb")
     download_img = urllib.request.urlopen(img_link)
@@ -33,7 +38,9 @@ for item in soup.find("ul", class_="_list").find_all("li"):
 
 '''Using pandas to clean data'''
 df = pd.DataFrame(items)
-df['prefecture'] = df['prefecture'].replace({'#': ''},regex=True)
-df['prefecture'] = df['prefecture'].str.replace('\d+', '', regex=True)
-df['prefecture'] = df['prefecture'].str.lstrip()
+# df['prefecture'] = df['prefecture'].replace({'#': ''},regex=True)
+# df['prefecture'] = df['prefecture'].str.replace('\d+', '', regex=True)
+# df['prefecture'] = df['prefecture'].str.lstrip()
+
+'''Output to csv'''
 df.to_csv('starbucks_jimoto.csv', index=False)
